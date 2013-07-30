@@ -4,7 +4,6 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.DisplayMode;
-import java.awt.Font;
 import java.awt.Graphics;
 import java.awt.Graphics2D;
 import java.awt.Image;
@@ -16,6 +15,8 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentEvent;
 import java.awt.event.KeyEvent;
 import java.awt.event.KeyListener;
+import java.awt.event.MouseEvent;
+import java.awt.event.MouseListener;
 import java.awt.geom.AffineTransform;
 import java.awt.geom.Ellipse2D;
 import java.awt.geom.Rectangle2D;
@@ -115,7 +116,7 @@ public class World extends JFrame
 	public static void main(String[] args)
 	{		
 		World world = new World();
-		world.run(dm);
+		//world.run(dm);
 	}
 	
 	public void run(DisplayMode dm) 
@@ -226,7 +227,7 @@ public class World extends JFrame
 	}
 }
 
-class WorldPanel extends WiiTest implements ActionListener, KeyListener
+class WorldPanel extends WiiTest implements ActionListener, KeyListener, MouseListener
 {
 	private static final long serialVersionUID = 1L;
 
@@ -246,6 +247,7 @@ class WorldPanel extends WiiTest implements ActionListener, KeyListener
 	private Ship ship;
 	private boolean charging;
 	private boolean charged;
+	private boolean laserCharged;
 	
 	private Projectile[] projectiles = new Projectile[PROJECTILES];	
 	private Projectile[] enemyProjectiles = new Projectile[PROJECTILES];
@@ -270,6 +272,7 @@ class WorldPanel extends WiiTest implements ActionListener, KeyListener
 		requestFocus();
 		requestFocusInWindow();
 		addKeyListener(this);
+		addMouseListener(this);
 		this.stage = stage;
 		this.ship = World.getShip();
 		
@@ -391,6 +394,12 @@ class WorldPanel extends WiiTest implements ActionListener, KeyListener
 		}
 		if (ship.getCharge() >= ship.getChargeLimit()) {
 			charged = true;
+		}
+		if (!laserCharged) {
+			ship.setLaserCharge(ship.getLaserCharge()+0.2);
+		}
+		if (ship.getLaserCharge() >= ship.getChargeLimit()*2) {
+			laserCharged = true;
 		}
 		repaint();	
 	}
@@ -574,12 +583,15 @@ class WorldPanel extends WiiTest implements ActionListener, KeyListener
 			TexturePaint tp = new TexturePaint(ImageIO.read(new File("src/images/interface/charge_texture.gif")), new Rectangle2D.Double(140,380,140,11));
 			g2.setPaint(tp);
 			g2.fill(new Rectangle2D.Double(140,380, ship.getCharge()*2 ,11));
-			g2.drawImage(ImageIO.read(new File("src/images/interface/charge_bar.gif")), 130, 380, this);					
+			g2.drawImage(ImageIO.read(new File("src/images/interface/charge_bar.gif")), 130, 380, this);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}
 		g2.setColor(Color.WHITE);
 		g2.drawLine(0, 375, 1000, 375);
+		
+		drawLaserCharger(g2);
+		
 		// draw Pause
 		if (paused) {
 			g2.drawString("Game paused - press P to continiue", 400, 250);
@@ -937,4 +949,46 @@ class WorldPanel extends WiiTest implements ActionListener, KeyListener
 			g2.drawImage(ship.getShield().getSprites(), (int)ship.getX()+16, (int)ship.getY()-11, this);
 		}
 	}
+	
+	public void drawLaserCharger(Graphics2D g2)
+	{		
+		try {
+			TexturePaint tp;
+			tp = new TexturePaint(ImageIO.read(new File("src/images/interface/laser_texture.gif")), new Rectangle2D.Double(510,380,510,11));
+			g2.setPaint(tp);
+			g2.fill(new Rectangle2D.Double(510,380, ship.getLaserCharge() ,11));
+			g2.drawImage(ImageIO.read(new File("src/images/interface/charge_bar.gif")), 500, 380, this);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		
+		
+	}
+	
+	@Override
+	public void mouseClicked(MouseEvent arg0)
+	{}
+
+	@Override
+	public void mouseEntered(MouseEvent arg0)
+	{}
+
+	@Override
+	public void mouseExited(MouseEvent arg0)
+	{}
+
+	@Override
+	public void mousePressed(MouseEvent ev)
+	{
+		if (ship.getLaserCharge() >= ship.getChargeLimit()*2) {
+			laserCharged = false;
+			ship.setLaserCharge(0);
+			playSound("laserBeam.wav");
+			System.out.println("x:" + ev.getX() + " y:" + ev.getY());
+		}
+	}
+
+	@Override
+	public void mouseReleased(MouseEvent arg0)
+	{}
 }

@@ -26,6 +26,7 @@ public class Ship extends BaseObject implements ActionListener
 	private int[] ammunition;
 	private int charge;
 	private int chargeLimit;
+	private double laserCharge;
 	private static int skin;	
 	public static final int SKIN_HUNTER = 1;
 	public static final int SKIN_FUSION = 2;
@@ -275,6 +276,14 @@ public class Ship extends BaseObject implements ActionListener
 	public void setCharge(int charge)
 	{
 		this.charge = charge;
+	}	
+	public double getLaserCharge()
+	{
+		return laserCharge;
+	}
+	public void setLaserCharge(double laserCharge)
+	{
+		this.laserCharge = laserCharge;
 	}
 	public static int getSkin()
 	{
